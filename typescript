@@ -1,0 +1,1298 @@
+Script started on Wed 06 Mar 2013 02:24:46 PM MST
+]0;jcote008@ins:~/Comp_II/Assignments/Assignment_3/asg3[?1034h[jcote008@ins.mtroyal.ca ~/Comp_II/Assignments/Assignment_3/asg3> ls - al
+ls: cannot access -: No such file or directory
+ls: cannot access al: No such file or directory
+]0;jcote008@ins:~/Comp_II/Assignments/Assignment_3/asg3[jcote008@ins.mtroyal.ca ~/Comp_II/Assignments/Assignment_3/asg3> ls -al
+total 72
+drwxr-xr-x 2 jcote008 students  4096 Mar  6 14:24 [0m[01;34m.[0m
+drwxr-xr-x 3 jcote008 students  4096 Mar  6 11:36 [01;34m..[0m
+-rw-r--r-- 1 jcote008 students 16469 Mar  6 11:37 ioutil.cpp
+-rw-r--r-- 1 jcote008 students   614 Mar  6 11:37 ioutil.h
+-rw-r--r-- 1 jcote008 students 13682 Mar  6 11:37 main.cpp
+-rw-r--r-- 1 jcote008 students   521 Mar  6 11:37 makefile
+-rw-r--r-- 1 jcote008 students 14865 Mar  6 14:24 Mandelbrot.cpp
+-rw-r--r-- 1 jcote008 students  1235 Mar  6 11:37 Mandelbrot.h
+-rw-r--r-- 1 jcote008 students     0 Mar  6 14:24 typescript
+[m]0;jcote008@ins:~/Comp_II/Assignments/Assignment_3/asg3[jcote008@ins.mtroyal.ca ~/Comp_II/Assignments/Assignment_3/asg3> cat ioutil.cpp [A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Kp
+// Name: ioutil.cpp
+// Description:  Contains the functions for our two other I/O utility
+//               functions required: readBool and readString
+// Written By:  James Coté
+/////////////////////////////////////////////////////////////////////////////
+
+// INCLUDES
+#include <iostream>
+#include <stdlib.h>
+#include <climits>
+#include <vector>
+#include "ioutil.h"
+
+// NAMESPACES
+using namespace std;
+
+// CONSTANTS
+const char cNEWLINE = '\n'; 
+const int iCHAR_MAX_LENGTH = 2;
+const char cWHITESPACE = ' ';
+const char cNULL_CHAR = '\0';
+
+// Name: clearFailBuffer
+// Description: Clears any fail state on cin then ignores what's left in the 
+//              input buffer.
+// Written by:  James Coté
+/////////////////////////////////////////////////////////////////////////////
+void clearFailBuffer()
+{
+    if( cin.fail() )
+    {
+	// Clear the fail state
+	cin.clear();	
+	cin.ignore( INT_MAX, '\n' );
+    }    
+}
+
+// Name: clearString
+// Description: Sets every value of the c-string to the null character.
+// Parameters: char str[] - a pointer to the first element of the c-string
+//                          that we wish to clear.
+//             int maxlen - the maximum length of the c-string that we want 
+//                          to clear (NOTE: may
+//                          not be the full size of the character array).
+// Written by: James Coté
+/////////////////////////////////////////////////////////////////////////////
+void clearString( char str[], int maxlen )
+{
+    // Go through the string, up to max length specified and set the
+    // characters to null.
+    for( int i = 0; i < maxlen; ++i )
+    {
+	str[i] = '\0';
+    }    
+}
+
+// Description: reads in a long integer as required by our readInt function
+// Method: Get a line from the user, determine if we triggered an end of file,
+//         convert to a long int via strtol and finally set a boolean to see
+//         if the long integer can be properly converted to a regular integer.
+// Parameters: cInput - reference to the input array that is used to read in
+//                      an integer.
+//             bEOF - end of file flag, set if we get and eof.
+//             bWrongInput - boolean to determine whether the integer entered
+//                           was wrong or not.  Passed as reference to use
+//                           for loop conditional.
+// Return Value: returns the integer read in.  Return value will be different
+//               if the user enters an integer outside the bounds of an int,
+//               however, in that case, we ask them for a new input.
+/////////////////////////////////////////////////////////////////////////////
+int Get_int( char cInput[], bool &bWrongInput, bool &bEOF )
+{
+    // Local Variables
+    long int liVar = 0;
+    char *cpEndPtr = NULL;
+
+    // Get a line of input from user to parse
+    cin.getline( cInput, CHAR_MAX, cNEWLINE );
+    bEOF = cin.eof(); // Set our end of file flag.
+
+    // Attempt to convert the input to a long int
+    liVar = strtol( cInput, &cpEndPtr, 0 );
+
+    // Set our wrong input flag to determine if the integer read in is correct.
+    bWrongInput = ( ( cin.fail() || 
+		      ( (*cpEndPtr) != '\0' ) || 
+		      ( ( cInput[ 0 ] == cWHITESPACE ) ||
+			( cInput[ 0 ] == (*cpEndPtr) ) ) || 
+		      ( ( ( liVar > INT_MAX ) ||
+			  ( liVar < INT_MIN ) ) ) ) && 
+		    !bEOF );
+
+    // return our int value
+    return (int)liVar;
+}
+
+// Name: readInt( const char prompt[], bool &eof )
+// Description: Successfully reads a valid integer.  uses error checking to
+//              ensure only a proper integer is kept.
+// Method: To start, we prompt the user with the passed in message then read
+//         a line of text from the user and set our eof flag in case the user
+//         triggers an end of file.  We then take the character string that 
+//         was grabbed by the user and attempt to convert it to a long int
+//         via the strtol function.  Passed into the strol function is a
+//         character pointer that is set to point at the first point in the
+//         character array that encounters a problem (if no problem is 
+//         encountered, the pointer will be pointing at a NULL character
+//         '\0').  After we read the long integer, we attempt to see if the
+//         long int lies within the limits of a regular integer.  We're 
+//         basically testing the string to make sure it is a valid integer.
+//         If the input isn't a valid integer, we enter a while loop until
+//         we get input that is valid.  In the loop we prompt the user
+//         again and clear any flags that may have arose from our first
+//         prompt.  We then repeat the process until we get a valid integer.
+//         We also make sure to clear the fail state if we hit the end of
+//         file.
+// Parameters: const char prompt[] - A message passed in to prompt the user 
+//                                   to enter an integer.
+//             bool &eof - A pointer to the program's end of file flag.  Set 
+//                         to true if we reach the end of file, otherwise, 
+//                         set to false if we get a valid integer.
+// Returns: The integer that was input from the user.
+/////////////////////////////////////////////////////////////////////////////
+int readInt( const char prompt[], bool &eof )
+{
+    // Internal Variable Declarations:
+    char cInputString[ CHAR_MAX ] = {};
+    bool bWrongInput = true;
+    int iReturnValue;
+
+    // Output our prompt message to prompt the user to enter an integer.
+    cout << prompt << endl;
+
+    // read in the next int value
+    iReturnValue = Get_int( cInputString, bWrongInput, eof );
+    
+    // While we don't have the input we want, re-prompt the user.
+    while( bWrongInput )
+    {
+	// Output an error message:
+	cout << "I'm sorry, '" << cInputString;
+	cout << ( cin.fail() ? "..." : "" ) << "' isn't what I'm ";
+	cout << "looking for.  Please try again.  " << endl << endl;
+	cout << prompt << endl;
+
+	// If we're in the fail state, clear it
+	if( cin.fail() )
+	{
+	    // clear fail state
+	    cin.clear();
+	    
+            // ignore anything left in the input buffer.
+	    cin.ignore( INT_MAX, cNEWLINE );
+	}
+	
+	// read in another int value.
+	iReturnValue = Get_int( cInputString, bWrongInput, eof );
+    }
+    
+    // If we're leaving because of end of file, clear fail flags.
+    if( eof )
+    {
+	cin.clear();
+    }
+
+    // Return the integer we grabbed.
+     return iReturnValue;
+}
+
+// Name: readBool( const char prompt[], bool &eof )
+// Description: Prompts the user to enter in either a 'y' or 'n' character
+//              followed by a newline. If we receive the wrong input, 
+//              we will notify the user of an error then reprompt the user 
+//              until we get the input we're looking for.
+// Method: We first use readChar to reliably get a character as input.  We
+//         call readChar with 'y' and 'n' variable parameters to ensure we
+//         don't get a character that we don't want.  Once we get the
+//         character, we make sure there was no end of file called and then
+//         we use a switch statement on the input to determine what to 
+//         return.  The default case is strictly for safety purposes;
+//         readChar should only return 'y' or 'n'.  We then return from the
+//         function with the proper return value.
+// Parameters: const char prompt - This is a string passed into the function
+//                                 and is used to prompt the user for input.
+//             bool &eof - This is a reference to a boolean variable used
+//                         by the main program to determine when the end of
+//                         file is reached.
+// Return value: returns a requested boolean value from the user:
+//               'y' = true, 'n' = false.
+// Written by: James Coté
+/////////////////////////////////////////////////////////////////////////////
+bool readBool( const char prompt[], bool &eof )
+{
+    // Create variables
+    bool bReturn;
+    char cInput = '\0';
+
+    // grab a character from the user, ensure it's a y or an n
+    cInput = readChar( prompt, eof, 2, 'y', 'n' );
+    
+    if( !eof )
+    {
+	// Parse the first character
+	switch( cInput )
+	{
+	case 'n':            
+	    bReturn = false; 
+	    break;
+	case 'y':            
+	    bReturn = true;  
+	    break;
+	default:      
+	    // Prompt error message and request new input.
+	    cerr << "I'm sorry, '" << cInput;
+	    cerr << "' was not the answer we were looking for.";
+	    cerr << "  Please try again." << endl << endl;
+	    cerr << prompt << endl;
+	    cInput = readChar( prompt, eof, 2, 'y', 'n' );
+	    break;
+	}
+    }
+
+    // Return our boolean value.
+    return bReturn;
+}
+
+// Name: readChar
+// Description: Reliably reads a character from the user, compares it with
+//              any additional comparative arguments passed into the
+//              function and ensures it's a character that the caller is
+//              looking for.
+// Method: After declaring our variables, create a vector of variable
+//         parameters if there are variable parameters to check
+//         (iVarArgCount > 0).  Once our vector is filled, prompt the user
+//         and get input.  After we get the input and set our eof flag,
+//         we enter a while loop to begin parsing the input for the
+//         correct input.  We need to check if (1) the input was entered
+//         correctly and (2) it is the proper character (compare it to our
+//         variable arguments).  Otherwise, we've succeeded and we can
+//         return the input.  If we didn't succeed, we reprompt the user
+//         and ask for input again.
+// Parameters: prompt - Message to prompt the user to enter a character.
+//             eof - EoF flag passed by reference to determine if the user
+//                   triggers an end of file.
+//             iVarArgCount - Integer that indicates how many variable
+//                            arguments are passed into the function.
+//             ... - variable character arguments that are used when the
+//                   caller is looking for a specific character(s).
+///////////////////////////////////////////////////////////////////////////
+char readChar( const char prompt[], bool &eof, int iVarArgCount, ... )
+{
+    // Variable Declarations
+    char cInput[ iCHAR_MAX_LENGTH ] = { };
+    vector< char > cCompareList;
+    bool bSuccess = false;
+
+    // if there's variable arguments, store them in a character array
+    if( iVarArgCount > 0 )
+    {
+	// Get our Variable Arguments
+	va_list va_Character_List;
+	va_start( va_Character_List, iVarArgCount );
+
+	for( int i = 0; i < iVarArgCount; ++i )
+	{
+	    cCompareList.push_back( ( char ) va_arg( va_Character_List, int ) );
+	}
+
+	va_end( va_Character_List );
+    }
+
+    // Prompt the user to enter a character
+    cout << prompt << endl;
+    
+    // read in input
+    cin.getline( cInput, ( iCHAR_MAX_LENGTH + 1 ), cNEWLINE );
+    eof = cin.eof();
+
+    // Error Checking
+    while( !bSuccess & !eof )
+    {
+	if( cInput[ iCHAR_MAX_LENGTH - 1 ] != cNULL_CHAR )
+	{
+	    // Error, output a message and re-prompt
+	    cerr << "I'm sorry, the format needs to contain a character ";
+	    cerr << "followed by a newline.  Please try again." << endl;
+	    cerr << endl << prompt << endl;
+
+	    // Clear the fail state and input buffer
+	    clearFailBuffer();
+	}
+	else if( !cCompareList.empty() )
+	{
+	    // We have arguments to compare our input against
+	    for( vector< char >::iterator it = cCompareList.begin(); it != cCompareList.end(); ++it )
+	    {
+		// If it is a character we're looking for, we succeeded.
+		if( cInput[ 0 ] == (*it) )
+		{
+		    bSuccess = true;
+		}
+	    }
+	    
+	    // If not successful, let the user know.
+	    if( !bSuccess )
+	    {
+		cerr << "I'm sorry, I'm looking for one of the following";
+		cerr << " characters: ";
+		
+		for( vector< char >::iterator it = cCompareList.begin(); it != cCompareList.end(); ++it )
+		{
+		    cerr << "'" << (*it) << "'";
+		    
+		    if( (it + 2) == cCompareList.end() )
+			cerr << ", or ";
+		    else if( (it + 1 ) != cCompareList.end() )
+			cerr << ", ";
+		}
+
+		cerr << "." << endl << endl;
+		cerr << prompt << endl;
+	    }
+	}
+	else
+	    bSuccess = true;
+
+	// "If at first you don't succeed, try, try again."
+	if( !bSuccess )
+	{
+	    // Clear the Input String
+	    clearString( cInput, iCHAR_MAX_LENGTH );
+
+	    // get more input from the user.
+	    cin.getline( cInput, ( iCHAR_MAX_LENGTH + 1 ), cNEWLINE );
+	    eof = cin.eof();
+	}
+    }
+    
+    // Clear fail state if we are leaving because of an end of file.
+    if( eof )
+    {
+	cin.clear();
+    }
+
+    // return the character
+    return cInput[ 0 ];
+}
+
+// Function Name: readString
+// Description: Prompts the user for a string between a minimum and maximum
+//              length as specified by the variables passed in.  
+//              Upon reading the string, it will parse the string to make 
+//              sure it's within the specified bounds.  Once it receives 
+//              a string from the user that is valid, it will exit the 
+//              function.
+// Method: When we enter the function, we first set every element in the 
+//         return string to '\0' for use with error checking later.
+//         We then prompt the user and grab a string from them.  We set
+//         getline to read in up to a maximum of maxlen+1 because it
+//         will enter a fail state if it attempts to read past that and
+//         then we know that the string entered is too long.  We use
+//         the same boolean flag technique for our while loop as we did
+//         in the readbool function.  We then check to see if the string
+//         entered is either too long or too short.  Otherwise, we set
+//         our flag to true, clear any eof flags, then return.
+// Parameters: const char prompt[] - a c-string that contains a message for
+//                                   the user prompting them to enter a
+//                                   string.
+//             char str[] - a pointer to the first element of the c-string
+//                          that the user's string will be stored in.
+//             int maxlen - an integer value that specifies the maximum
+//                          length of the string to be read.
+//             int minlen - an integer value that specifies the minimum
+//                          length of the string to be read.
+//             bool &eof - a reference to the program's end of file boolean
+//                         to determine if the user enters an end of file
+//                         ( ctrl+D ).
+// Written by:  James Coté
+/////////////////////////////////////////////////////////////////////
+void readString( const char prompt[], char str[], int maxlen, int minlen, bool &eof )
+{
+    // Initialize our success flag
+    bool bSuccess = false;
+
+    // Ensure our str c-string is nullified.  Don't assume it is.
+    clearString( str, maxlen );
+
+    // Prompt the user for input
+    cout << prompt << endl;
+
+    // Get input from the user then ensure we haven't reached the 
+    // end of file.
+    cin.getline( str, ( maxlen + 1 ), '\n' );
+    eof = cin.eof();
+
+    //check to make sure it's valid.
+    while( !bSuccess && !eof )
+    {
+	// Check to make sure minlen isn't set to 0 so we don't go out 
+	// of bounds in the array.  Also, make sure that the string is
+	// at least the minimum length.
+	if( ( minlen != 0 ) && ( str[ minlen - 1 ] == '\0' ) )
+	{
+	    // Output an error message to let the user know that what they
+	    // entered was too short of a string.
+	    cerr << "I'm sorry, the minimum length of the string must be ";
+	    cerr << minlen << " long.  Please try again." << endl << endl;
+	    cerr << prompt << endl;
+	    clearString( str, maxlen );
+	}
+	else if( cin.fail() )  // Entered fail state (input > maxlength)
+	{
+	    cerr << "I'm sorry, but the string you entered was too long.";
+	    cerr << "  Please keep it at a maximum length of " << maxlen;
+	    cerr << ".  Thank you." << endl << endl << prompt << endl;
+	    clearFailBuffer();
+	}
+	else                   // We succeeded, trigger our success flag.
+	{
+	    bSuccess = true;
+	}
+
+	// If we didn't succeed, read in another string from the user.
+	if( !bSuccess )
+	{
+	    cin.getline( str, ( maxlen + 1 ), '\n' );
+	    eof = cin.eof();
+	}
+    }
+
+    // If we're leaving because of end of file, clear fail flags.
+    if( eof )
+    {
+	cin.clear();
+    }
+
+    // Exit function
+    return;
+}
+]0;jcote008@ins:~/Comp_II/Assignments/Assignment_3/asg3[jcote008@ins.mtroyal.ca ~/Comp_II/Assignments/Assignment_3/asg3> cat ioutil.h
+// Name: ioutil.h
+// Description: The header file for I/O utility functions 
+// Written By: James Coté
+///////////////////////////////////////////////////////////
+
+// DEFINES
+#ifndef IOUTIL_H
+#define IOUTIL_H
+
+// INCLUDES
+#include <cstdarg>
+
+// FUNCTION PROTOTYPES:
+int readInt( const char prompt[], 
+	     bool &eof );
+
+bool readBool( const char prompt[], 
+	       bool &eof );
+
+char readChar( const char prompt[], 
+	       bool &eof, 
+	       int iVarArgCount, 
+	       ... );
+
+void readString( const char prompt[], 
+		 char str[], 
+		 int maxlen, 
+		 int minlen, 
+		 bool &eof );
+
+// End of our define.
+#endif
+]0;jcote008@ins:~/Comp_II/Assignments/Assignment_3/asg3[jcote008@ins.mtroyal.ca ~/Comp_II/Assignments/Assignment_3/asg3> cat makefile
+# Make File for Assignment 3
+
+TARGET=Assignment3
+MODULES=ioutil.o main.o Mandelbrot.o
+HEADERS=ioutil.h
+CPPFLAGS=-ansi -Wall -fprofile-arcs -ftest-coverage `Magick++-config --cppflags --ldflags`
+
+$(TARGET): $(MODULES)
+	g++ $(CPPFLAGS) $(MODULES) -o $(TARGET)
+
+clean:
+	rm -f *.o $(TARGET) *~ *.gcov *.gcda *.gcno
+
+all: clean $(TARGET)
+
+ioutil.o: ioutil.cpp ioutil.h
+	g++ $(CPPFLAGS) -c ioutil.cpp
+
+main.o: main.cpp
+	g++ $(CPPFLAGS) -c main.cpp
+
+Mandelbrot.o: Mandelbrot.cpp Mandelbrot.h
+	g++ $(CPPFLAGS) -c Mandelbrot.cpp 
+]0;jcote008@ins:~/Comp_II/Assignments/Assignment_3/asg3[jcote008@ins.mtroyal.ca ~/Comp_II/Assignments/Assignment_3/asg3> cat main.cpp
+// Name: main.cpp
+// Description: Main driver for the Magick program.
+// Purpose: This program is designed to draw a mandelbrot image recursively.
+// Known Issues: 
+// Written by: James Coté
+// ID: 201512008
+// MRU E-Mail: jcote008@mtroyal.ca
+////////////////////////////////////////////////////////////////////////////////
+
+// INCLUDES
+#include "Mandelbrot.h"
+#include "ioutil.h"
+#include <iostream>
+
+// NAMESPACES
+using namespace std;
+
+// CONSTANTS
+const int iMAX_FILE_NAME_LENGTH = 20;
+const int iMIN_FILE_NAME_LENGTH = 5;
+const int iMAX_DIMENSION_ITERATIONS = 5;
+
+// FUNCTION DECLARATIONS
+sColorCode Initiate_Color_Code( );
+int Get_Recursive_Int( const char cPrompt[], bool &bEOF, int iIteration = 0 );
+void Get_Color_Code( sColorCode &sColor, bool &bEOF );
+float Get_RGB_Mask( const char cPrompt[], bool &bEOF );
+bool Get_Informed_Bool( const char cReadBoolPrompt[],
+			const char cTitle[],
+			const char cTrueCaseExplanation[],
+			const char cFalseCaseExplanation[],
+			bool &bEOF );
+
+// DEFINES
+#define Formatting cout << "_______________________________________" << endl << endl
+#define ExitLine   cout << "End of File Reached.  Exiting Program..." << endl << endl
+
+// Description: Our main function is designed to simply get all the necessary
+//              information from the user and call the Draw Image function.
+//              This is done in one pass and in the even of an EoF, we simply
+//              skip the rest of the input asked by the user and end the program.
+// Method: After declaring local variables, we output a welcome message and get
+//         the name of the file the user would like to save.  We assume that the
+//         user enters in the proper file extension for the file name.  If they
+//         don't, then they have to wait for the entire image to be drawn before
+//         they get an error message from Magick++ about not knowing what kind of
+//         file it is.  After getting the file name, we ask the users for the X
+//         and Y dimensions of the image.  This is called from a seperate function
+//         that recursively ensures that the Dimensions are > 0.  After the
+//         dimensions are set, we call a function that will set up any color 
+//         filters from the user.  If we didn't hit an end of file, we create the
+//         image and exit the program once complete.
+// Assumptions: We assume the user enters a proper file extension for the file name.
+////////////////////////////////////////////////////////////////////////////////////
+int main( )
+{
+    // Local Variables
+    sColorCode sColor = Initiate_Color_Code( );
+    char cFileName[ iMAX_FILE_NAME_LENGTH ] = { };
+    int iXDimension = 0;
+    int iYDimension = 0;
+    int iMax_Iterations = 100;
+    bool bEOF = false;
+
+    Formatting;
+
+    cout << "Welcome to the Mandelbrot Set image generator (Ver: 1.0)!" << endl << endl;
+
+    // Get File Name
+    readString( "Please enter the name of the file you'd like to save the image to: ", 
+		cFileName,
+		iMAX_FILE_NAME_LENGTH,
+		iMIN_FILE_NAME_LENGTH,
+		bEOF );
+
+    if( !bEOF )
+	Formatting;
+    else
+	ExitLine;   
+
+    // Get Image Parameters
+    iXDimension = Get_Recursive_Int( "Please enter the width of the image (must be > 0): ", bEOF );
+    iYDimension = Get_Recursive_Int( "Please enter the height of the image (must be > 0): ", bEOF );
+    iMax_Iterations = Get_Recursive_Int( "Please enter the maximum iterations to use when determining if a pixel lies in the Mandelbrot Set (a good default is 100): ", bEOF );
+
+    if( !bEOF )
+	Formatting;
+
+    // Set up our color filters
+    Get_Color_Code( sColor, bEOF );
+
+    if( !bEOF )
+	Formatting;
+
+    // Create the Image
+    if( !bEOF )
+	Create_Image( cFileName, 
+		      iXDimension, 
+		      iYDimension, 
+		      iMax_Iterations, 
+		      sColor );
+
+    if( !bEOF )
+	Formatting;
+
+    return 0;
+}
+
+// Description: This function initializes the sColorCode struct to the default
+//              settings and returns the newly created sColorCode.
+// Defaults: Each mask is set to 1.0f which will keep the same values that the
+//           algorithm decides for the color weight (colorweight * 1).  bInverColors
+//           and bGreyScale are both set to false.
+// Return Value: Returns a sColorCode variable set to the default parameters.
+////////////////////////////////////////////////////////////////////////////////////
+sColorCode Initiate_Color_Code( )
+{
+    sColorCode sReturnValue;
+    
+    sReturnValue.fRGBMask[ eRED ]   = 1.0f;
+    sReturnValue.fRGBMask[ eGREEN ] = 1.0f; 
+    sReturnValue.fRGBMask[ eBLUE ]  = 1.0f;
+    sReturnValue.bInvertColors      = false;
+    sReturnValue.bGreyScale         = false;
+
+    return sReturnValue;
+}
+
+// Description: This function handles all the logic for prompting the user and 
+//              setting the Color Filters for the image.
+// Method: If we encountered an End of File before entering this function then we
+//         don't do anything.  Otherwise, we first ask the user if they would like
+//         to edit the colors on the image.  If they choose yes, we first prompt
+//         them to enter in a percentage value for each RGB value that will be used
+//         to mask the weight to a specified color.  Following that, we ask the user
+//         if they would like to invert the colors and/or implement a grey scale
+//         filter.  These assignments call a special function that informs the user
+//         of what will happen based on their choice.
+// Parameters: sColor - A reference to the sColorCode struct that will hold all the
+//                      newly set up parameters from the user.
+//             bEOF - A boolean reference that we check to make sure we haven't
+//                    encountered an end of file.
+////////////////////////////////////////////////////////////////////////////////////
+void Get_Color_Code( sColorCode &sColor, bool &bEOF )
+{
+    if( !bEOF )
+    {
+	// Local Variables
+	bool bSetUpColors = readBool( "Would you like to edit the color that the image will take (y/n)? ", bEOF );
+
+	if( bSetUpColors )
+	{
+	    if( !bEOF )
+		Formatting;
+
+	    // Get RGB Mask Values
+	    sColor.fRGBMask[ eRED ]   = 
+		Get_RGB_Mask( "Please enter a weight mask for Red (0-100%): ", bEOF );
+	    sColor.fRGBMask[ eGREEN ] = 
+		Get_RGB_Mask( "Please enter a weight mask for Green (0-100%): ", bEOF );
+	    sColor.fRGBMask[ eBLUE ]  = 
+		Get_RGB_Mask( "Please enter a weight mask for Blue (0-100%): ", bEOF );
+
+	    if( !bEOF )
+		Formatting;
+
+	    // Inform the user and prompt them to set up the bInvertColors boolean
+	    sColor.bInvertColors = Get_Informed_Bool( "Would you like the colors inverted (y/n)? ",
+						      "Color Inversion: (True/False)",
+						      "True: The color you specified will be Outside the mandelbrot set.",
+						      "False: The color you specified will be Inside the mandelbrot set.",
+						      bEOF );
+
+	    if( !bEOF )
+		Formatting;
+
+	    sColor.bInvertSpectrum = Get_Informed_Bool( "Would you like to flip the color spectrum (y/n)? ",
+							"Spectrum Inversion: (True/False)",
+							"True: Each color mask you specified will be on the opposite color spectrum (70% -> 30%, etc).",
+							"False: Each color mask you specified will remain the same.",
+							bEOF );
+
+	    if( !bEOF )
+		Formatting;
+
+	    // Inform the user and prompt them to set up the bGreyScale boolean
+	    sColor.bGreyScale = Get_Informed_Bool( "Would you like to turn on the Grey Scale (y/n)? ",
+						   "Grey Scale: (True/False)",
+						   "True: Set the colors to be on a scale from Black to White.",
+						   "False: Set the colors to be on the color spectrum you masked.",
+						   bEOF );
+	}
+	else if( bEOF )
+	    ExitLine;
+    }
+}
+
+// Description: Prompts the user for a weight percentage to return a desired color
+//              weight.
+// Method: After initializing our variables, we do a check to ensure we haven't
+//         encountered an end of file.  If we haven't, we read an int from the user.
+//         We don't care what the user enters in because if they enter anything out
+//         of our bounds (0-100) we simply truncate it to a bound before converting
+//         it to a floating point variable that we return to the caller.
+// Parameters: cPrompt - the prompt passed in from the caller that we use when
+//                       calling the read int function.
+//             bEOF - A boolean reference that we check to make sure we haven't
+//                    encountered an end of file.
+// Return Value: We return a floating point value that signifies a weight (0.0 - 1.0).
+////////////////////////////////////////////////////////////////////////////////////
+float Get_RGB_Mask( const char cPrompt[], bool &bEOF )
+{
+    // Local Variables
+    float fReturnValue = 1.0f;
+    int iPercent = 100;
+
+    if( !bEOF )
+    {
+	// Get input
+	iPercent = readInt( cPrompt, bEOF );
+
+	if( bEOF )
+	    ExitLine;
+
+	// Truncate Input
+	if( iPercent < 0 )        // 0% Min
+	    iPercent = 0;
+	else if( iPercent > 100 ) // 100% Max 
+	    iPercent = 100;
+
+	// Convert to Float
+	fReturnValue = (float)(iPercent) / 100.0f; 
+    }
+
+    return fReturnValue;
+}
+
+// Description: We inform the user of what effects setting the boolean will have
+//              before prompting them to enter a boolean that we return to the
+//              caller.
+// Method: We are passed in each prompt to the user, so we simply do an EOF check
+//         then output the title, true case explanation and false case explanation
+//         before prompting the user and returning our result.
+// Parameters: cReadBoolPrompt - the prompt passed in from the caller that we use 
+//                               when calling the read bool function.
+//             cTitle - The title to display to the user, this signifies what bool
+//                      we're asking the user to manipulate.
+//             cTrueCaseExplanation - A prompt that explains to the user what will
+//                                    happen if they set the value to be true.
+//             cFalseCaseExplanation - A prompt that explains to the user what will
+//                                    happen if they set the value to be false.
+//             bEOF - A boolean reference that we check to make sure we haven't
+//                    encountered an end of file.
+// Return Value: Returns the boolean choice of the user.
+////////////////////////////////////////////////////////////////////////////////////
+bool Get_Informed_Bool( const char cReadBoolPrompt[],
+			const char cTitle[],
+			const char cTrueCaseExplanation[],
+			const char cFalseCaseExplanation[],
+			bool &bEOF )
+{
+    // Local Variables
+    bool bReturnValue = false;
+
+    if( !bEOF )
+    {
+	cout << cTitle << endl;
+	cout << cTrueCaseExplanation << endl;
+	cout << cFalseCaseExplanation << endl << endl;
+	bReturnValue = readBool( cReadBoolPrompt,
+				 bEOF );
+
+	if( bEOF )
+	    ExitLine;
+    }
+
+    return bReturnValue;
+}
+
+// Description: This function is to recursively get some integer from the user.
+//              The only stipulation is that we don't want negative dimensions or
+//              a dimension that is 0.  If a user wants to wait for an 80000x80000
+//              image to be processed that's their prerogative, even though that may
+//              cause a segmentation fault, this program doesn't care.  When used to
+//              grab the number of iterations, we also don't want a value <= 0.
+// Method: After initializing our return variable we do a end of file check to
+//         ensure we want to prompt the user at all.  This function is recursive
+//         and limits the user's number of attempts at entering in a dimension.
+//         Since we're required to use recursion and we don't want the possibility
+//         of an infinite recursive function, we increment the iterations each time
+//         the user enters in a dimension <= 0.  Once the user is out of attempts,
+//         we simply set our end of file flag and exit the program.  Otherwise, if
+//         the user still has attempts that he can use, we read in an int and check
+//         that there were no errors in their input (end of file reached/value <= 0).
+//         If there is an error, we recall this function and once we reached the max
+//         iterations, we return from the stack and end the program.
+// Parameters: cPrompt - A message to prompt the user when asking them for our return
+//                       value.
+//             bEOF - A boolean reference that we check to make sure we haven't
+//                    encountered an end of file.
+//             iIteration - The current iteration of the recursive function.
+// Return Value: Returns the integer entered by the user.
+////////////////////////////////////////////////////////////////////////////////////
+int Get_Recursive_Int( const char cPrompt[], bool &bEOF, int iIteration )
+{
+    // Local Variables
+    int iReturnValue = 0;
+
+    if( !bEOF )
+    {
+	// Read input form user
+	if( iIteration <= iMAX_DIMENSION_ITERATIONS )
+	{
+	    iReturnValue = readInt( cPrompt, bEOF );
+
+	    // output a message if EOF reached.
+	    if( bEOF )
+		ExitLine;
+	   
+	}
+	else  // too many iterations
+	{
+	    cout << "I'm sorry, you're out of attempts.  Exiting Program..." << endl;
+	    bEOF = true;
+	}
+
+	// check to make sure input is correct
+	if( !bEOF && ( iReturnValue <= 0 ) )
+	{
+	    cout << "I'm sorry, the dimension of the image cannot be less than or equal to 0.  ";
+	    cout << "You have '" << iMAX_DIMENSION_ITERATIONS - iIteration;
+	    cout << "' trys remaining.  Please Try Again!" << endl;
+	    
+	    iReturnValue = Get_Recursive_Int( cPrompt, bEOF, ( iIteration + 1 ) );
+	}
+	
+    }
+    
+    // return the dimension.
+    return iReturnValue;
+}
+]0;jcote008@ins:~/Comp_II/Assignments/Assignment_3/asg3[jcote008@ins.mtroyal.ca ~/Comp_II/Assignments/Assignment_3/asg3> cat Mandelbrot..cpp
+// Name: Mandelbrot.cpp
+// Description: Module implementation of the Mandelbrot Image making module.
+// Known Issues: Unsure how to get smoothing to work.  Don't entirely understand
+//               the algorithm and, therefore, it isn't implemented.
+// Written By: James Coté
+////////////////////////////////////////////////////////////////////////////////
+
+// INCLUDES
+#include "Mandelbrot.h"
+#include <Magick++.h>
+#include <complex>
+#include <math.h>
+#include <iostream>
+
+// Namespaces
+using namespace Magick;
+using namespace std;
+
+// CONSTANTS
+const int iPROGRESS_BAR_SIZE = 80;
+
+// Bounds of our complex Plane
+const float fCXMIN = -2.5f;
+const float fCXMAX = 1.0f;
+const float fCYMIN = -1.0f;
+const float fCYMAX = 1.0f;
+
+// Description: Recursive function that outputs a Progress Bar based on a
+//              desired size constant and a percentage of completion of
+//              compiling the image.
+// Method: If it's the first iteration (special case), we output the start of
+//         the progress bar: '['.  For each subsequent iteration we determine if
+//         we output a space or a bar character depending on how much of the
+//         image we have left to fill.  This is modified based on the desired
+//         size of the bar to ensure the percentage complete is accurate,
+//         regardless of the bar size.  This function will iterate iPROGRESS_BAR
+//         _SIZE times and will output the closing ']' on the last iteration.
+//         NOTE: This function is only to output the Bar, it doesn't output the
+//         progress information that precedes the bar.  We also end our output
+//         with the character '\r' to reset our cursor to the beginning of the
+//         buffer.  We then flush the buffer to ensure it's properly cleared.
+// Parameters: iPercent - Integer that tells us how much of the image we have
+//                        completed.  Assumed to be already truncated to be
+//                        relative to the size of the progress bar when passed
+//                        in.
+//             iIterations - Recursive flag.  When we recursively call this 
+//                           function again, we add one to this variable and 
+//                           exit back through the stack once the iterations ==
+//                           the size of the progress bar.
+////////////////////////////////////////////////////////////////////////////////
+void Output_Progress_Bar( int iPercent, int iIterations = 0 )
+{
+    // Special case for start of bar
+    if( iIterations == 0 )
+	cout << '[';
+
+    // each node: determine whether we output a Bar character or a space.
+    if( iPercent >= iIterations )
+	cout << (char)(219);
+    else
+	cout << ' ';
+
+    // Recursive Check
+    if( iIterations < iPROGRESS_BAR_SIZE )
+	Output_Progress_Bar( iPercent, ( iIterations + 1 ) );
+    else
+    {
+	cout << "]\r";
+	cout.flush();
+    }
+}
+
+// Description: Isolated function to output progress text then call the
+//              recursive "Output_Progress_Bar" function to visually show the
+//              current progress of the program.
+// Method: Fairly simple.  Output the total Progress as a percent then call on
+//         the Output_Progress_Bar function to recursively draw the visual
+//         progress of the program.
+// Parameters: iPercentComplete - True percentage of completion.  We output this
+//                                to the user then pass it into the Progress Bar
+//                                function.
+////////////////////////////////////////////////////////////////////////////////
+void Show_Progress( int iPercentComplete )
+{
+    cout << "Progress: " << iPercentComplete << "%";
+    Output_Progress_Bar( ( iPercentComplete * iPROGRESS_BAR_SIZE ) / 100 );
+}
+
+// Description: Inverts the color values of a provided ColorRGB object.  Used
+//              multiple times in the program.
+// Method: Take the colors and subtract them from 1.0f to get the opposite value
+//         (.70 -> .30, 1.0 -> 0.0, etc.).
+// Parameters: Color - A ColorRGB object that's passed by reference.  Each value
+//                     of the object is manipulated then the function returns.
+////////////////////////////////////////////////////////////////////////////////
+void Invert_Colors( ColorRGB &Color )
+{
+    Color.red( 1.0f - Color.red() );
+    Color.green( 1.0f - Color.green() );
+    Color.blue( 1.0f - Color.blue() );
+}
+
+// Description: Takes a calculated weight that's to be used for the RGB values
+//              of the pixel and applies any Color Filters that were specified
+//              by the user.
+// Method: First, start by initializing a local ColorRGB variable that is to be
+//         passed back from the function after all the filters have been applied.
+//         Second, apply any filters.  If a Grey Scale has been specified, don't
+//         apply any filters since each RGB value has been set to the same weight.
+//         Otherwise, apply the masks specified by the user (Default: 1.0f) then,
+//         if the user wanted the colors inverted, take the current weight and
+//         subtract it from 1.0f to get the opposite weight.
+// Parameters: fColorWeight - The weight of each RGB value as determined by the
+//                            escape time algorithm.
+//             sColor - a constant reference to our Color Filters that were
+//                      specified by the user.
+// Return Value: Returns a ColorRGB variable for the current pixel.
+////////////////////////////////////////////////////////////////////////////////
+ColorRGB Parse_Color( float fColorWeight, 
+		      const sColorCode &sColor )
+{
+    // Local Variables
+    ColorRGB ReturnColor = ColorRGB( fColorWeight, 
+				     fColorWeight, 
+				     fColorWeight );
+    
+    // Apply Filters
+    if( sColor.bInvertColors )
+    {
+	Invert_Colors( ReturnColor );
+    }    
+
+    if( !sColor.bGreyScale )
+    {
+	ReturnColor.red( ReturnColor.red() *  sColor.fRGBMask[ 0 ] );
+	ReturnColor.green( ReturnColor.green() *  sColor.fRGBMask[ 1 ] );
+	ReturnColor.blue( ReturnColor.blue() *  sColor.fRGBMask[ 2 ] );
+    }	
+    
+    if( sColor.bInvertSpectrum )
+    {
+	Invert_Colors( ReturnColor );
+    }
+    
+    return ReturnColor;
+}
+
+// Description: Implements the recursive logic of determining the Mandelbrot set
+//              z -> z^2 + c where z and c are complex numbers.  c is the distance
+//              from the center of the Mandelbrot set and z is the iterating 
+//              number to determine if we've exited the bounds of the set.  We
+//              determine the color of the pixel based on how many iterations we
+//              called to get out of the set.
+// Method: Since c and z are set in the caller, we can simply check if we are
+//         still within the bounds of the Mandelbrot set.  Once we reach max
+//         iterations or we escape outside the Mandelbrot set (abs(z) < 2.0f),
+//         we can then determine the weight of color on the pixel and call the
+//         Parse Color function to apply any color filters set by the user.
+// Parameters: c - complex number that contains the distance from the center of
+//                 the Mandelbrot set.
+//             z - complex number that helps us check when we've escaped the
+//                 Mandelbrot set.
+//             iterations - The number of recursive iterations we've done.
+//             sColor - a Constant reference to our color filters, specified
+//                      by the user. 
+// Return Value: Returns a ColorRGB variable for the current pixel.
+////////////////////////////////////////////////////////////////////////////////
+ColorRGB Get_Pixel_Color( complex< float > c, 
+			  complex< float > z, 
+			  int iterations,
+			  const int iMax_Iterations,
+			  const sColorCode &sColor )
+{
+    // Local Variables
+    ColorRGB ReturnColor = ColorRGB( 0.0, 0.0, 0.0 );
+
+    // Iterate until we've escaped the Mandelbrot set.
+    if( ( iterations < iMax_Iterations ) && ( std::abs(z) < 2.0f ) )
+	ReturnColor = Get_Pixel_Color( c, 
+				       ( (z*z) + c ), 
+				       ( iterations + 1 ), 
+				       iMax_Iterations,
+				       sColor );
+    else if( iterations == iMax_Iterations )
+	ReturnColor = Parse_Color( 1.0, sColor );
+    else
+	ReturnColor = Parse_Color( ( (float)(iterations) / 
+				     (float)(iMax_Iterations) ), 
+				   sColor );
+
+    // Return the parsed color of the pixel.
+    return ReturnColor;
+}
+
+// Description: Part 2 of the recursion algorithm that follows down the Y axis
+//              for each x in the X-axis and draws each pixel.  This function
+//              calls the Show_Progress function as well as the Get_Pixel_Color
+//              function.
+// Method: It starts by generating a complex c variable based on the current 
+//         pixel being looked at, the maximum size of the image and the bounds
+//         of the complex plane.  it also sets a pixel color variable that grabs
+//         the pixel color that's parsed from the Get_Pixel_Color function, 
+//         assuming that we haven't reached the bottom of the image.  Otherwise,
+//         we call this function again and increment the current Y value until we
+//         get to the bottom.  Then we follow back through the function calls to
+//         the draw image function.
+// Parameters: magImage - A reference to our Image file that we will use to draw
+//                        the pixels and write the image.
+//             fCurrentX - A floating point value of the x position of the
+//                         current pixel. 
+//             fCurrentY - A floating point value of the y position of the 
+//                         current pixel.
+//             fMaxX - The maximum width of the image.  Since we are working with
+//                     a 0-based algorithm, we need to use fMaxX - 1.0f when
+//                     doing comparisons to the current x value.
+//             fMaxY - The maximum height of the image.  Since we are working
+//                     with a 0-based algorithm, we need to use fMaxY - 1.0f when
+//                     doing comparisons to the current y value.
+//             sColor - A constant reference to our color filters, specified
+//                      by the user. 
+////////////////////////////////////////////////////////////////////////////////
+void Draw_Y_Line( Image &magImage, 
+		  const float fCurrentX, 
+		  const float fCurrentY, 
+		  const float fMaxX, 
+		  const float fMaxY,
+		  const int iMax_Iterations,
+		  const sColorCode &sColor )
+{
+    // Local Variables
+    std::complex< float > c( ( fCXMIN + fCurrentX / ( fMaxX - 1.0f ) * ( fCXMAX - fCXMIN ) ),
+			     ( fCYMIN + fCurrentY / ( fMaxY - 1.0f ) * ( fCYMAX - fCYMIN ) ) );
+    ColorRGB LocalPixelColor;
+
+    // Show our Progress.
+//    Show_Progress( ( ( fCurrentY + ( ( fCurrentX - 1 ) * fMaxY ) ) / ( fMaxY * fMaxX ) ) * 100 );
+
+    if( fCurrentY != fMaxY )
+    {
+	// Draw Pixel Logic
+	LocalPixelColor = Get_Pixel_Color( c, 0, 0, iMax_Iterations, sColor );
+	magImage.pixelColor( fCurrentX, fCurrentY, LocalPixelColor );
+    }
+
+    // Recursive condition.
+    if( fCurrentY < (fMaxY - 1.0f) )
+	Draw_Y_Line( magImage, 
+		     fCurrentX, 
+		     (fCurrentY + 1.0f), 
+		     fMaxX, 
+		     fMaxY, 
+		     iMax_Iterations,
+		     sColor );
+}
+
+// Description: Part 1 of the Drawing Algorithm.  This function draws all the
+//              pixels in the Y axis for each position of X. 
+// Method: We have one special case in which we don't want to draw a line when
+//         we've reached the bounds of X.  Otherwise, we call the Draw_Y_Line
+//         function that will draw each pixel on the Y axis for the current
+//         value of X.  After we've drawn the line, we check our recursive 
+//         condition to ensure we're not at the last value of X (in a 0-based
+//         mapping) and if we aren't, we'll recursively call this function again
+//         and pass in the currentX + 1.0f as our iterator.
+// Parameters: magImage - A reference to our Image file that we will use to draw
+//                        the pixels and write the image.
+//             fCurrentX - A floating point value of the x position of the
+//                         current pixel. 
+//             fMaxX - The maximum width of the image.  Since we are working with
+//                     a 0-based algorithm, we need to use fMaxX - 1.0f when
+//                     doing comparisons to the current x value.
+//             fMaxY - The maximum height of the image.  Since we are working
+//                     with a 0-based algorithm, we need to use fMaxY - 1.0f when
+//                     doing comparisons to the current y value.
+//             sColor - A constant reference to our color filters, specified
+//                      by the user. 
+////////////////////////////////////////////////////////////////////////////////
+void Draw_Image( Image &magImage, 
+		 const float fCurrentX, 
+		 const float fMaxX, 
+		 const float fMaxY,
+		 const int iMax_Iterations,
+		 const sColorCode &sColor )
+{
+    // Local Variables
+    if( fCurrentX != fMaxX )
+	Draw_Y_Line( magImage, fCurrentX, 0.0f, fMaxX, fMaxY, iMax_Iterations, sColor );
+    
+    if( fCurrentX < (fMaxX - 1) )
+	Draw_Image( magImage, (fCurrentX + 1.0f), fMaxX, fMaxY, iMax_Iterations, sColor );
+
+    // return
+    return;
+}
+
+// Description: Creates a mandelbrot image.  Saves it into a file with the
+//              provided file name and sizes the image to the provided width
+//              and height.
+// Method: This is our main interface with the caller.  We first create a new
+//         Image, set the bounds of the Geometry of the image (width & height),
+//         we then Draw the image using the Escape Time Algorithm.  After the 
+//         image is drawn, we output a completion prompt along with a buffer of
+//         space to clear any of the progress bar we're outputting over and we
+//         write the image to a specified file.
+// Parameters: cFileName[] - the name of the file to save the image to.
+//             iWidth - the desired width of the image.
+//             iHeight - the desired height of the image.
+//             sColor - A constant reference to the color filters specified from
+//                      the user.
+////////////////////////////////////////////////////////////////////////////////
+void Create_Image( char cFileName[], 
+		   const int iWidth, 
+		   const int iHeight,
+		   const int iMax_Iterations,
+		   const sColorCode &sColor )
+{
+    // Local Variables
+    Image magNewImage;
+    
+    // set up new image
+    magNewImage.extent( Geometry( iWidth, iHeight ) );
+
+    // Call recursive function to draw mandelbrot image
+    Draw_Image( magNewImage, 
+		0.0f, 
+		(float)(iWidth), 
+		(float)(iHeight),
+		iMax_Iterations,
+		sColor );
+
+    // Output Completion
+    cout << "Process Complete!" << string( iPROGRESS_BAR_SIZE, ' ' ) << "\n";
+
+    // Write the image.
+    magNewImage.write( cFileName );
+}
+]0;jcote008@ins:~/Comp_II/Assignments/Assignment_3/asg3[jcote008@ins.mtroyal.ca ~/Comp_II/Assignments/Assignment_3/asg3> cat Mandelbrot..h
+// Name: Mandelbrot.h
+// Description: Header for the mandelbrot image making module.
+// Written By: James Coté
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef MANDELBROT_H
+#define MANDELBROT_H
+
+// Enum to easily identify the different RGB values in the fRGBMask array.
+enum eColorCodes
+{
+    eRGB = 3,
+    eBLUE = 2,
+    eGREEN = 1,
+    eRED = 0
+};
+
+// COLOR FILTER STRUCTURE
+// Parts: fRGBMask[] - a Mask that filters each RGB % that the user can set to
+//                     modify the colors of the image.
+//        bInvertColors - a Boolean that, when set, will have the colors become
+//                        on the opposite side of the spectrum (1.0 - currentMask)
+//        bGreyScale - Makes the RGB values uniform so that each pixel is on a 
+//                     scale from Black to White.
+////////////////////////////////////////////////////////////////////////////////
+struct sColorCode
+{
+    float fRGBMask[ eRGB ];
+    bool bInvertColors;
+    bool bInvertSpectrum;
+    bool bGreyScale;
+};
+
+// FUNCTION DECLARATIONS
+void Create_Image( char cFileName[], 
+		   const int iWidth, 
+		   const int iHeight, 
+		   const int iMax_Iterations,
+		   const sColorCode &sColor );
+
+#endif
+]0;jcote008@ins:~/Comp_II/Assignments/Assignment_3/asg3[jcote008@ins.mtroyal.ca ~/Comp_II/Assignments/Assignment_3/asg3> make
+g++ -ansi -Wall -fprofile-arcs -ftest-coverage `Magick++-config --cppflags --ldflags` -c ioutil.cpp
+g++ -ansi -Wall -fprofile-arcs -ftest-coverage `Magick++-config --cppflags --ldflags` -c main.cpp
+g++ -ansi -Wall -fprofile-arcs -ftest-coverage `Magick++-config --cppflags --ldflags` -c Mandelbrot.cpp 
+g++ -ansi -Wall -fprofile-arcs -ftest-coverage `Magick++-config --cppflags --ldflags` ioutil.o main.o Mandelbrot.o -o Assignment3
+]0;jcote008@ins:~/Comp_II/Assignments/Assignment_3/asg3[jcote008@ins.mtroyal.ca ~/Comp_II/Assignments/Assignment_3/asg3> Assignment3 
+_______________________________________
+
+Welcome to the Mandelbrot Set image generator (Ver: 1.0)!
+
+Please enter the name of the file you'd like to save the image to: 
+demo.png
+_______________________________________
+
+Please enter the width of the image (must be > 0): 
+1000   920
+Please enter the height of the image (must be > 0): 
+1080
+Please enter the maximum iterations to use when determining if a pixel lies in the Mandelbrot Set (a good default is 100): 
+100
+_______________________________________
+
+Would you like to edit the color that the image will take (y/n)? 
+y
+_______________________________________
+
+Please enter a weight mask for Red (0-100%): 
+30
+Please enter a weight mask for Green (0-100%): 
+0
+Please enter a weight mask for Blue (0-100%): 
+100
+_______________________________________
+
+Color Inversion: (True/False)
+True: The color you specified will be Outside the mandelbrot set.
+False: The color you specified will be Inside the mandelbrot set.
+
+Would you like the colors inverted (y/n)? 
+n
+_______________________________________
+
+Spectrum Inversion: (True/False)
+True: Each color mask you specified will be on the opposite color spectrum (70% -> 30%, etc).
+False: Each color mask you specified will remain the same.
+
+Would you like to flip the color spectrum (y/n)? 
+n
+_______________________________________
+
+Grey Scale: (True/False)
+True: Set the colors to be on a scale from Black to White.
+False: Set the colors to be on the color spectrum you masked.
+
+Would you like to turn on the Grey Scale (y/n)? 
+n
+_______________________________________
+
+Process Complete!                                                                                
+_______________________________________
+
+]0;jcote008@ins:~/Comp_II/Assignments/Assignment_3/asg3[jcote008@ins.mtroyal.ca ~/Comp_II/Assignments/Assignment_3/asg3> exit
+exit
+
+Script done on Wed 06 Mar 2013 02:26:40 PM MST
